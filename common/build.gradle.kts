@@ -1,0 +1,45 @@
+plugins {
+    id("multiloader-common")
+    id("net.neoforged.moddev")
+}
+
+neoForge {
+    neoFormVersion = "neo_form_version"()
+    // Automatically enable AccessTransformers if the file exists
+    val at = file("src/main/resources/META-INF/accesstransformer.cfg")
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    parchment {
+        minecraftVersion = "parchment_minecraft"()
+        mappingsVersion = "parchment_version"()
+    }
+}
+
+dependencies {
+    compileOnly("org.spongepowered:mixin:0.8.5")
+    // fabric and neoforge both bundle mixinextras, so it is safe to use it in common
+    compileOnly("io.github.llamalad7:mixinextras-common:0.3.5")
+    annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.5")
+}
+
+configurations {
+    create("commonJava") {
+        isCanBeResolved = false
+        isCanBeConsumed = true
+    }
+    create("commonResources") {
+        isCanBeResolved = false
+        isCanBeConsumed = true
+    }
+}
+
+artifacts {
+    add("commonJava", sourceSets["main"].java.sourceDirectories.singleFile)
+    add("commonResources", sourceSets["main"].resources.sourceDirectories.singleFile)
+}
+
+operator fun String.invoke(): String {
+    return rootProject.ext[this] as? String
+        ?: throw IllegalStateException("Property $this is not defined")
+}
